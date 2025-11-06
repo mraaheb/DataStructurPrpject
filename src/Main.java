@@ -84,6 +84,21 @@ public class Main {
                 case 14:
                     handleViewAllOrders(); // نستدعي الميثود الجديدة
                     break;
+                    case 15:
+                    handleRemoveProduct();
+                    break;
+                case 16:
+                    handleSearchByName();
+                    break;
+                case 17:
+                    handleCancelOrder();
+                    break;
+                case 18:
+                    handleSearchOrderById();
+                    break;
+                case 19:
+                    handleEditReview();
+                    break;
                 case 0:
                     running = false;
                     System.out.println("Thank you for using the system. Goodbye!");
@@ -118,6 +133,13 @@ public class Main {
         System.out.println("12. View Order History for a Customer");
         System.out.println("13. View All Products"); 
         System.out.println("14. View All Orders");
+        
+        System.out.println("--- (Admin & Edit Actions) ---");
+        System.out.println("15. Remove a Product");
+        System.out.println("16. Search Product by Name");
+        System.out.println("17. Cancel an Order");
+        System.out.println("18. Search Order by ID");
+        System.out.println("19. Edit a Review");
  
         System.out.println("---");
         System.out.println("0. Exit System");
@@ -633,6 +655,157 @@ public class Main {
     // ...
         }
         System.out.println("Total Orders: " + allOrders.size());
+    }
+    
+    // ==========================================================
+    // --- (NEW METHODS FOR OPTIONS 15-19) ---
+    // ==========================================================
+
+    /**
+     * Handles Removing a product from the system.
+     */
+    private static void handleRemoveProduct() {
+        System.out.println("--- Remove a Product ---");
+        System.out.print("Enter the Product ID to remove: ");
+        String productId = scanner.nextLine();
+        
+        // We must check if the product exists first
+        Product p = system.findProductById(productId);
+        if (p == null) {
+            System.out.println("ERROR: Product ID not found. No product was removed.");
+            return;
+        }
+        
+        // If it exists, remove it
+        system.removeProduct(productId);
+        System.out.println("SUCCESS: Product '" + p.getName() + "' (ID: " + productId + ") has been removed.");
+        System.out.println("Note: This change is temporary and will be saved only on exit (Option 0).");
+    }
+
+    /**
+     * Handles Searching for a product by its name.
+     */
+    private static void handleSearchByName() {
+        System.out.println("--- Search Product by Name ---");
+        System.out.print("Enter Product Name to search for: ");
+        String name = scanner.nextLine();
+        
+        Product p = system.findProductByName(name);
+        
+        if (p != null) {
+            System.out.println("--- Product Found ---");
+            System.out.println("  ID: " + p.getProductId());
+            System.out.println("  Name: " + p.getName());
+            System.out.println("  Price: " + p.getPrice());
+            System.out.println("  Stock: " + p.getStock());
+            System.out.println("  Avg Rating: " + p.getAverageRating());
+        } else {
+            System.out.println("ERROR: No product found with that name.");
+        }
+    }
+
+    /**
+     * Handles Canceling an order.
+     */
+    private static void handleCancelOrder() {
+        System.out.println("--- Cancel an Order ---");
+        System.out.print("Enter the Order ID to cancel: ");
+        String orderId = scanner.nextLine();
+        
+        boolean success = system.cancelOrder(orderId);
+        
+        if (success) {
+            System.out.println("SUCCESS: Order ID " + orderId + " has been marked as 'canceled'.");
+            System.out.println("Note: This change is temporary and will be saved only on exit (Option 0).");
+        } else {
+            System.out.println("ERROR: Order ID not found.");
+        }
+    }
+
+    /**
+     * Handles Searching for an order by its ID.
+     */
+    private static void handleSearchOrderById() {
+        System.out.println("--- Search Order by ID ---");
+        System.out.print("Enter Order ID to search for: ");
+        String orderId = scanner.nextLine();
+        
+        Order o = system.findOrderById(orderId);
+        
+        if (o != null) {
+            System.out.println("--- Order Found ---");
+            System.out.println("  Order ID: " + o.getOrderId());
+            System.out.println("  Customer ID: " + o.getCustomerId());
+            System.out.println("  Date: " + dateFormatter.format(o.getOrderDate())); // Using our formatter
+            System.out.println("  Status: " + o.getStatus());
+            System.out.println("  Total Price: " + o.getTotalPrice());
+            
+            // Also print the products in that order
+            System.out.println("  Products in this order:");
+            MyLinkedList<Product> products = o.getProducts();
+            for(int i = 0; i < products.size(); i++) {
+                System.out.println("    - " + products.get(i).getName());
+            }
+        } else {
+            System.out.println("ERROR: No order found with that ID.");
+        }
+    }
+
+    /**
+     * Handles Editing an existing review.
+     */
+    private static void handleEditReview() {
+        System.out.println("--- Edit a Review ---");
+        
+        // 1. Find the product
+        System.out.print("Enter the Product ID for the review you want to edit: ");
+        String productId = scanner.nextLine();
+        Product p = system.findProductById(productId);
+        if (p == null) {
+            System.out.println("ERROR: Product ID not found.");
+            return;
+        }
+
+        // 2. Find the customer (to identify the review)
+        System.out.print("Enter *your* Customer ID (the review's author): ");
+        String customerId = scanner.nextLine();
+        if (system.findCustomerById(customerId) == null) {
+            System.out.println("ERROR: Customer ID not found.");
+            return;
+        }
+        
+        // 3. Get the new rating
+        int rating = 0;
+        boolean validRating = false;
+        while (!validRating) {
+            System.out.print("Enter New Rating (a whole number 1-5): ");
+            try {
+                rating = scanner.nextInt();
+                if (rating >= 1 && rating <= 5) {
+                    validRating = true;
+                } else {
+                    System.out.println("Error: Rating must be between 1 and 5.");
+                }
+            } catch (Exception e) {
+                System.out.println("Error: Invalid input. Please enter a whole number.");
+                scanner.nextLine();
+            }
+        }
+        scanner.nextLine(); // Consume newline
+
+        // 4. Get the new comment
+        System.out.print("Enter New Comment: ");
+        String comment = scanner.nextLine();
+        
+        // 5. Call the edit method
+        boolean success = p.editReview(customerId, comment, rating);
+        
+        if (success) {
+            System.out.println("SUCCESS: Your review for '" + p.getName() + "' has been updated.");
+            System.out.println("Note: This change is temporary and will be saved only on exit (Option 0).");
+        } else {
+            System.out.println("ERROR: No review from customer " + customerId + " was found for this product.");
+        }
     }
     
 }

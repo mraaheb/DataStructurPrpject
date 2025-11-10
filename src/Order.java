@@ -68,7 +68,7 @@ public class Order {
 
     /**
      * Updates the status of the order.
-     * This fulfills the "Update order status" operation. [cite: 8]
+     *  "Update order status" operation. 
      * @param newStatus The new status (e.g., "shipped").
      */
     public void updateStatus(String newStatus) {

@@ -13,7 +13,7 @@ public class Customer {
 
     /**
      * Constructor to create a new Customer.
-     * This is used for the "Register new customer" operation. [cite: 6]
+     * This is used for the "Register new customer" operation. 
      */
     public Customer(String customerId, String name, String email) {
         this.customerId = customerId;
@@ -42,7 +42,7 @@ public class Customer {
 
     /**
      * Adds a newly placed order to this customer's history.
-     * This is used by the "Place a new order" operation. [cite: 6]
+     * This is used by the "Place a new order" operation. 
      * @param order The order to add.
      */
     public void addOrderToHistory(Order order) {
@@ -51,7 +51,7 @@ public class Customer {
 
     /**
      * Retrieves the customer's entire order history.
-     * This fulfills the "View order history" operation. [cite: 6]
+     * "View order history" operation.
      * @return The list of orders.
      */
     public MyLinkedList<Order> getOrderHistory() {

@@ -31,7 +31,7 @@ public class ECommerceSystem {
         this.allOrders = new MyLinkedList<>();
     }
     
-    // --- NEW: Helper method to get a new, unique order ID ---
+    // --- : Helper method to get a new, unique order ID ---
     /**
      * Generates a new unique Order ID and increments the counter.
      * @return A new Order ID as a String.
@@ -41,7 +41,7 @@ public class ECommerceSystem {
         return String.valueOf(orderCounter++); 
     }
     
-    // --- NEW: Helper method to get all products (for the menu) ---
+    // --- : Helper method to get all products (for the menu) ---
     /**
      * Returns the entire list of products in the system.
      * @return The MyLinkedList of all products.
@@ -51,7 +51,7 @@ public class ECommerceSystem {
     }
 
     /**
-     * Fulfills: "Read data from CSV file"
+     *  "Read data from CSV file"
      * This method reads all 4 CSV files to populate the system.
      * It handles file errors and parsing.
      */
@@ -159,7 +159,7 @@ public class ECommerceSystem {
         }
     }
 
-    // --- (Rest of the methods: addProduct, findProductById, getTop3Products, etc...) ---
+    // --- ( methods: addProduct, findProductById, getTop3Products, etc...) ---
     // =================================================================
     // --- SECTION 2: Core Operations (from PDF Page 1) ---
     // =================================================================
@@ -333,5 +333,44 @@ public String getNewCustomerId() {
     }
 public MyLinkedList<Order> getAllOrders() {
         return this.allOrders;
+    }
+// ==========================================================
+    // --- ( METHODS that were missing) ---
+    // ==========================================================
+
+    /**
+     *  "Search by ID or name (linear)"
+     * Finds a product by its *name*.
+     * (We already had findById)
+     */
+    public Product findProductByName(String name) {
+        for (int i = 0; i < allProducts.size(); i++) {
+            Product p = allProducts.get(i);
+            // Use .equalsIgnoreCase() for a better search
+            if (p.getName().equalsIgnoreCase(name)) {
+                return p;
+            }
+        }
+        return null; // Not found
+    }
+
+    /**
+     *  "Create/cancel order"
+     * Cancels an order by updating its status.
+     
+     */
+    public boolean cancelOrder(String orderId) {
+        // First, find the order
+        Order o = findOrderById(orderId);
+        
+        if (o != null) {
+            // If found, update its status
+            o.updateStatus("canceled");
+            
+            // (Optional: We should also return the stock)
+            // (But for simplicity, we just cancel it)
+            return true; // Success
+        }
+        return false; // Order not found
     }
 }

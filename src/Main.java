@@ -5,20 +5,22 @@ import java.util.Date;
 
 /**
  * This is the main runnable class for the E-Commerce System.
- * (FINAL-FIXED Version with all input protections)
+ * (REFACTORED Version with Nested Menus and NO SAVE on exit)
  */
 public class Main {
 
+    // --- (Global Tools: We keep these as they are) ---
     private static Scanner scanner = new Scanner(System.in);
     private static ECommerceSystem system = new ECommerceSystem();
-    /**
-     * A single, reusable date formatter for all output.
-     * This makes all dates look clean and consistent (e.g., "2025-10-30").
-     */
     private static SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
+    
+    // ==========================================================
+    // --- (MAIN METHOD: This is the new, smaller main method) ---
+    // ==========================================================
     public static void main(String[] args) {
         
+        // --- Step 1: Load all data from CSV files (Same as before) ---
         System.out.println("Initializing E-Commerce System...");
         try {
             system.readDataFromCSV("prodcuts.csv", "customers.csv", "orders.csv", "reviews.csv");
@@ -29,140 +31,221 @@ public class Main {
             return; 
         }
 
+        // --- Step 2: Start the NEW MAIN menu loop ---
         boolean running = true;
         while (running) {
-            printMenu();
+            printMainMenu(); // Print the *new* main menu
             
-            int choice = -1;
-            try {
-                choice = scanner.nextInt();
-            } catch (Exception e) {
-                System.out.println("Invalid input. Please enter a number.");
-            }
-            scanner.nextLine(); 
+            int choice = getUserIntInput(); // Get user choice safely
 
             switch (choice) {
                 case 1:
-                    handleAddProduct();
+                    handleProductManagement(); // Go to Product Sub-Menu
                     break;
                 case 2:
-                    handleRegisterCustomer();
+                    handleCustomerOrderManagement(); // Go to Customer/Order Sub-Menu
                     break;
                 case 3:
-                    handlePlaceOrder();
-                    break;
-                case 4:
-                    handleAddReview(); // This method is now fixed
-                    break;
-                case 5:
-                    handleFindProduct();
-                    break;
-                case 6:
-                    handleListOutOfStock();
-                    break;
-                case 7:
-                    handleListTop3();
-                    break;
-                case 8:
-                    handleFindReviewsByCustomer();
-                    break;
-                case 9:
-                    handleFindCommonProducts();
-                    break;
-                case 10:
-                    handleViewAllCustomers(); // The 'proof' query
-                    break;
-                    case 11:
-                    handleOrdersBetweenDates(); 
-                    break;
-                    case 12:
-                    handleViewCustomerOrders(); 
-                    break;
-                    case 13:
-                    handleViewAllProducts(); // نستدعي الميثود الجديدة
-                    break;
-                case 14:
-                    handleViewAllOrders(); // نستدعي الميثود الجديدة
-                    break;
-                    case 15:
-                    handleRemoveProduct();
-                    break;
-                case 16:
-                    handleSearchByName();
-                    break;
-                case 17:
-                    handleCancelOrder();
-                    break;
-                case 18:
-                    handleSearchOrderById();
-                    break;
-                case 19:
-                    handleEditReview();
+                    handleReportManagement(); // Go to Reports Sub-Menu
                     break;
                 case 0:
+                    // --- THIS IS THE CHANGE: NO SAVE ---
+                    // We just set running to false and exit.
                     running = false;
                     System.out.println("Thank you for using the system. Goodbye!");
                     break;
                 default:
                     System.out.println("Invalid choice. Please try again.");
             }
-            
-            if (running) {
-                System.out.println("\nPress Enter to continue...");
-                scanner.nextLine();
-            }
         }
         
         scanner.close(); 
     }
 
-    private static void printMenu() {
-        System.out.println("\n--- E-Commerce System Menu ---");
-        System.out.println("1. Add a new Product");
-        System.out.println("2. Register a new Customer");
-        System.out.println("3. Place a new Order");
-        System.out.println("4. Add a Product Review");
-        System.out.println("---");
-        System.out.println("5. Find Product by ID");
-        System.out.println("6. List Out-of-Stock Products");
-        System.out.println("7. List Top 3 Products (by rating)");
-        System.out.println("8. Find all Reviews by a Customer");
-        System.out.println("9. Find Common Reviewed Products (by 2 customers)");
-        System.out.println("10. View All Customers"); // Added for proof
-        System.out.println("11. Find Orders Between Two Dates");
-        System.out.println("12. View Order History for a Customer");
-        System.out.println("13. View All Products"); 
-        System.out.println("14. View All Orders");
-        
-        System.out.println("--- (Admin & Edit Actions) ---");
-        System.out.println("15. Remove a Product");
-        System.out.println("16. Search Product by Name");
-        System.out.println("17. Cancel an Order");
-        System.out.println("18. Search Order by ID");
-        System.out.println("19. Edit a Review");
- 
-        System.out.println("---");
-        System.out.println("0. Exit System");
+    // ==========================================================
+    // --- ( Main Menu & Sub-Menu Handlers) ---
+    // ==========================================================
+
+    /**
+     * Prints the Main Menu (Level 1)
+     */
+    private static void printMainMenu() {
+        System.out.println("\n===== MAIN MENU =====");
+        System.out.println("1. Product Management");
+        System.out.println("2. Customer & Order Management");
+        System.out.println("3. Reports & Queries");
+        System.out.println("---------------------");
+        System.out.println("0. Exit (Without Saving)");
         System.out.print("Enter your choice: ");
+    }
+
+    /**
+     * Handles the Product Management Sub-Menu (Level 2)
+     */
+    private static void handleProductManagement() {
+        boolean inProductMenu = true;
+        while (inProductMenu) {
+            System.out.println("\n--- [Product Management Menu] ---");
+            System.out.println("1. Add a new Product ");
+            System.out.println("2. Remove a Product ");
+            System.out.println("3. Find Product by ID ");
+            System.out.println("4. Search Product by Name ");
+            System.out.println("6. Update a Product's Details");
+            System.out.println("5. View All Products ");
+            System.out.println("---------------------");
+            System.out.println("0. Return to Main Menu");
+            System.out.print("Enter your choice: ");
+
+            int choice = getUserIntInput();
+            switch (choice) {
+                case 1: handleAddProduct(); break;
+                case 2: handleRemoveProduct(); break;
+                case 3: handleFindProduct(); break;
+                case 4: handleSearchByName(); break;
+                case 5: handleViewAllProducts(); break;
+                case 6: handleUpdateProduct(); 
+                    break;
+                case 0: inProductMenu = false; break; // Exit this loop
+                default: System.out.println("Invalid choice.");
+            }
+            if (inProductMenu) pauseForUser();
+        }
+    }
+
+    /**
+     * Handles the Customer & Order Management Sub-Menu (Level 2)
+     */
+    private static void handleCustomerOrderManagement() {
+        boolean inCustomerMenu = true;
+        while (inCustomerMenu) {
+            System.out.println("\n--- [Customer & Order Menu] ---");
+            System.out.println("1. Register a new Customer ");
+            System.out.println("2. View All Customers ");
+            System.out.println("---");
+            System.out.println("3. Place a new Order ");
+            System.out.println("4. Cancel an Order ");
+            System.out.println("5. Search Order by ID ");
+            System.out.println("6. View All Orders ");
+            System.out.println("7. View Order History for a Customer");
+            System.out.println("8. Update an Order's Status");
+            System.out.println("---------------------");
+            System.out.println("0. Return to Main Menu");
+            System.out.print("Enter your choice: ");
+
+            int choice = getUserIntInput();
+            switch (choice) {
+                case 1: handleRegisterCustomer(); break;
+                case 2: handleViewAllCustomers(); break;
+                case 3: handlePlaceOrder(); break;
+                case 4: handleCancelOrder(); break;
+                case 5: handleSearchOrderById(); break;
+                case 6: handleViewAllOrders(); break;
+                case 7: handleViewCustomerOrders(); break;
+                case 8:handleUpdateOrderStatus(); 
+                    break;
+                case 0: inCustomerMenu = false; break; // Exit this loop
+                default: System.out.println("Invalid choice.");
+            }
+            if (inCustomerMenu) pauseForUser();
+        }
+    }
+
+    /**
+     * Handles the Reports & Queries Sub-Menu (Level 2)
+     */
+    private static void handleReportManagement() {
+        boolean inReportMenu = true;
+        while (inReportMenu) {
+            System.out.println("\n--- [Reports & Queries Menu] ---");
+            System.out.println("1. Add a Product Review ");
+            System.out.println("2. Edit a Product Review ");
+            System.out.println("3. List Top 3 Products (by rating) )");
+            System.out.println("4. List Out-of-Stock Products ");
+            System.out.println("5. Find all Reviews by a Customer ");
+            System.out.println("6. Find Common Reviewed Products (by 2 customers) ");
+            System.out.println("7. Find Orders Between Two Dates ");
+            System.out.println("---------------------");
+            System.out.println("0. Return to Main Menu");
+            System.out.print("Enter your choice: ");
+
+            int choice = getUserIntInput();
+            switch (choice) {
+                case 1: handleAddReview(); break;
+                case 2: handleEditReview(); break;
+                case 3: handleListTop3(); break;
+                case 4: handleListOutOfStock(); break;
+                case 5: handleFindReviewsByCustomer(); break;
+                case 6: handleFindCommonProducts(); break;
+                case 7: handleOrdersBetweenDates(); break;
+                case 0: inReportMenu = false; break; // Exit this loop
+                default: System.out.println("Invalid choice.");
+            }
+            if (inReportMenu) pauseForUser();
+        }
+    }
+
+    // ==========================================================
+    // 
+    // (These are small helper methods to keep the code clean)
+    // ==========================================================
+
+    /**
+     * A safe way to get an integer from the user.
+     */
+    private static int getUserIntInput() {
+        int choice = -1;
+        try {
+            choice = scanner.nextInt();
+        } catch (Exception e) {
+            System.out.println("Invalid input. Please enter a number.");
+        }
+        scanner.nextLine(); // Always consume the newline
+        return choice;
+    }
+
+    /**
+     * Pauses the screen until the user presses Enter.
+     */
+    private static void pauseForUser() {
+        System.out.println("\nPress Enter to continue...");
+        scanner.nextLine();
+    }
+    
+    /**
+     * A helper method to robustly ask the user for a date.
+     *
+     */
+    private static Date parseDateFromUser(String prompt) {
+        SimpleDateFormat userDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = null;
+        boolean validDate = false;
+        
+        while (!validDate) {
+            System.out.print(prompt + " (yyyy-MM-dd): ");
+            String input = scanner.nextLine();
+            try {
+                date = userDateFormat.parse(input);
+                validDate = true; 
+            } catch (ParseException e) {
+                System.out.println("Error: Invalid date format. Please use yyyy-MM-dd (e.g., 2025-01-20).");
+            }
+        }
+        return date;
     }
 
 
     // ==========================================================
-    // --- (FIXED METHOD: handleAddProduct) ---
+    // --- (ACTION METHODS) ---
+    // 
     // ==========================================================
-    /**
-     * Handles adding a new product.
-     * IMPROVED: Now auto-generates Product ID and uses try-catch for numbers.
-     */
+
+    // (handleAddProduct)
     private static void handleAddProduct() {
         System.out.println("--- Add New Product ---");
-        
         String id = system.getNewProductId();
         System.out.println("Your new (auto-generated) Product ID is: " + id);
-
         System.out.print("Enter Product Name: ");
         String name = scanner.nextLine();
-        
         double price = 0;
         boolean validPrice = false;
         while (!validPrice) {
@@ -176,11 +259,10 @@ public class Main {
                 }
             } catch (Exception e) {
                 System.out.println("Error: Invalid input. Please enter a number.");
-                scanner.nextLine(); // Clear the bad input
+                scanner.nextLine(); 
             }
         }
-        scanner.nextLine(); // Consume newline after valid double
-        
+        scanner.nextLine(); 
         int stock = 0;
         boolean validStock = false;
         while (!validStock) {
@@ -194,65 +276,45 @@ public class Main {
                 }
             } catch (Exception e) {
                 System.out.println("Error: Invalid input. Please enter a whole number.");
-                scanner.nextLine(); // Clear the bad input
+                scanner.nextLine(); 
             }
         }
-        scanner.nextLine(); // Consume newline after valid int
-
+        scanner.nextLine(); 
         Product p = new Product(id, name, price, stock);
         system.addProduct(p);
         System.out.println("SUCCESS: Product '" + name + "' added.");
     }
 
-    // ==========================================================
-    // --- (FIXED METHOD: handleRegisterCustomer) ---
-    // ==========================================================
-    /**
-     * Handles registering a new customer.
-     * IMPROVED: Now auto-generates Customer ID.
-     */
+    // (handleRegisterCustomer)
     private static void handleRegisterCustomer() {
         System.out.println("--- Register New Customer ---");
-        
         String id = system.getNewCustomerId();
         System.out.println("Your new (auto-generated) Customer ID is: " + id);
-
         System.out.print("Enter Customer Name: ");
         String name = scanner.nextLine();
         System.out.print("Enter Customer Email: ");
         String email = scanner.nextLine();
-
         Customer c = new Customer(id, name, email);
         system.registerNewCustomer(c);
         System.out.println("SUCCESS: Customer '" + name + "' registered.");
     }
 
-
-    // ==========================================================
-    // --- (FIXED METHOD: handlePlaceOrder) ---
-    // ==========================================================
-    /**
-     * Handles the "Place Order" workflow.
-     * IMPROVED: Shows a NUMBERED list, auto-generates Order ID, and uses try-catch.
-     */
+    // (handlePlaceOrder)
     private static void handlePlaceOrder() {
         System.out.println("--- Place New Order ---");
         System.out.print("Enter your Customer ID: ");
         String customerId = scanner.nextLine();
-        
         Customer customer = system.findCustomerById(customerId);
         if (customer == null) {
             System.out.println("ERROR: Customer ID not found.");
             return;
         }
-
         System.out.println("\n--- Available Products (Please choose a number) ---");
         MyLinkedList<Product> allProducts = system.getAllProducts();
         if (allProducts.isEmpty()) {
             System.out.println("Sorry, there are no products available to order.");
             return;
         }
-        
         for (int i = 0; i < allProducts.size(); i++) {
             Product p = allProducts.get(i);
             System.out.println(
@@ -263,35 +325,22 @@ public class Main {
             );
         }
         System.out.println("-------------------------------------");
-
         String orderId = system.getNewOrderId(); 
         Order order = new Order(orderId, customerId, new Date());
         System.out.println("Your new Order ID is: " + orderId);
-
-        // --- Shopping Cart Loop ---
         while (true) {
             System.out.print("Enter Product *Number* to add to cart (or 0 to finish): ");
+            int productNumber = getUserIntInput(); 
             
-            int productNumber = -1; // Default
-            try {
-                productNumber = scanner.nextInt();
-            } catch (Exception e) {
-                System.out.println("Invalid input. Please enter a number.");
-            }
-            scanner.nextLine(); // Consume newline
-
             if (productNumber == 0) {
-                break; // Exit the shopping loop
+                break; 
             }
-            
             if (productNumber < 1 || productNumber > allProducts.size()) {
                 System.out.println("ERROR: Invalid number. Please choose from the list.");
                 continue; 
             }
-            
             int productIndex = productNumber - 1; 
             Product product = allProducts.get(productIndex); 
-            
             if (product.getStock() == 0) {
                 System.out.println("ERROR: Sorry, '" + product.getName() + "' is out of stock.");
             } else {
@@ -300,12 +349,9 @@ public class Main {
                 System.out.println("Added '" + product.getName() + "' to cart. Current Total: " + order.getTotalPrice());
             }
         }
-        
-        // --- Finalize Order ---
         if (order.getProducts().isEmpty()) {
             System.out.println("Order canceled (no products were added).");
         } else {
-            // --- NEW: Added the Order Summary (Receipt) ---
             System.out.println("\n--- Your Order Summary (ID: " + order.getOrderId() + ") ---");
             MyLinkedList<Product> items = order.getProducts();
             for (int i = 0; i < items.size(); i++) {
@@ -313,38 +359,27 @@ public class Main {
                 System.out.println("- " + p.getName() + " (" + p.getPrice() + ")");
             }
             System.out.println("-------------------------------------");
-            
             system.placeNewOrder(customerId, order);
             System.out.println("SUCCESS: Order placed! Your final total is: " + order.getTotalPrice());
         }
     }
     
-    // ==========================================================
-    // --- (FIXED METHOD: handleAddReview) ---
-    // ==========================================================
-    /**
-     * Handles adding a new product review.
-     * IMPROVED: Now uses try-catch and validation for the rating.
-     */
+    // (handleAddReview)
     private static void handleAddReview() {
         System.out.println("--- Add Product Review ---");
         System.out.print("Enter Product ID to review: ");
         String productId = scanner.nextLine();
-        
         Product product = system.findProductById(productId);
         if (product == null) {
             System.out.println("ERROR: Product ID not found.");
             return;
         }
-
         System.out.print("Enter your Customer ID: ");
         String customerId = scanner.nextLine();
         if (system.findCustomerById(customerId) == null) {
             System.out.println("ERROR: Customer ID not found.");
             return;
         }
-
-        // --- This whole block is new to handle the error ---
         int rating = 0;
         boolean validRating = false;
         while (!validRating) {
@@ -352,37 +387,28 @@ public class Main {
             try {
                 rating = scanner.nextInt();
                 if (rating >= 1 && rating <= 5) {
-                    validRating = true; // Good, exit the loop
+                    validRating = true; 
                 } else {
                     System.out.println("Error: Rating must be between 1 and 5.");
                 }
             } catch (Exception e) {
-                // This will catch "4.5" or "five"
                 System.out.println("Error: Invalid input. Please enter a whole number (e.g., 4).");
-                scanner.nextLine(); // Clear the bad input from the scanner
+                scanner.nextLine(); 
             }
         }
-        scanner.nextLine(); // Consume the newline after the valid int
-        // --- End of new block ---
-
+        scanner.nextLine(); 
         System.out.print("Enter Comment: ");
         String comment = scanner.nextLine();
-
         Review review = new Review(customerId, rating, comment);
         product.addReview(review);
-        
         System.out.println("SUCCESS: Your review for '" + product.getName() + "' has been added.");
     }
 
-    // ==========================================================
-    // --- (Rest of the methods are unchanged) ---
-    // ==========================================================
-
+    // (handleFindProduct)
     private static void handleFindProduct() {
         System.out.println("--- Find Product by ID ---");
         System.out.print("Enter Product ID: ");
         String productId = scanner.nextLine();
-        
         Product p = system.findProductById(productId);
         if (p != null) {
             System.out.println("Found Product:");
@@ -395,48 +421,44 @@ public class Main {
         }
     }
 
+    // (handleListOutOfStock)
     private static void handleListOutOfStock() {
         System.out.println("--- Out-of-Stock Products ---");
         MyLinkedList<Product> outOfStock = system.getOutOfStockProducts();
-        
         if (outOfStock.isEmpty()) {
             System.out.println("No products are out of stock.");
             return;
         }
-        
         for (int i = 0; i < outOfStock.size(); i++) {
             Product p = outOfStock.get(i);
             System.out.println("- " + p.getName() + " (ID: " + p.getProductId() + ")");
         }
     }
 
+    // (handleListTop3)
     private static void handleListTop3() {
         System.out.println("--- Top 3 Rated Products ---");
         MyLinkedList<Product> topProducts = system.getTop3Products();
-        
         if (topProducts.isEmpty()) {
             System.out.println("No products have been rated yet.");
             return;
         }
-        
         for (int i = 0; i < topProducts.size(); i++) {
             Product p = topProducts.get(i);
             System.out.println((i+1) + ". " + p.getName() + " (Avg Rating: " + p.getAverageRating() + ")");
         }
     }
 
+    // (handleFindReviewsByCustomer)
     private static void handleFindReviewsByCustomer() {
         System.out.println("--- Find Reviews by Customer ---");
         System.out.print("Enter Customer ID: ");
         String customerId = scanner.nextLine();
-        
         MyLinkedList<Review> reviews = system.extractCustomerReviews(customerId);
-        
         if (reviews.isEmpty()) {
             System.out.println("No reviews found for this customer.");
             return;
         }
-        
         System.out.println("Reviews by Customer " + customerId + ":");
         for (int i = 0; i < reviews.size(); i++) {
             Review r = reviews.get(i);
@@ -444,40 +466,32 @@ public class Main {
         }
     }
 
+    // (handleFindCommonProducts)
     private static void handleFindCommonProducts() {
         System.out.println("--- Find Common Reviewed Products (> 4 stars) ---");
         System.out.print("Enter Customer ID 1: ");
         String customerId1 = scanner.nextLine();
         System.out.print("Enter Customer ID 2: ");
         String customerId2 = scanner.nextLine();
-        
         MyLinkedList<Product> common = system.getCommonReviewedProducts(customerId1, customerId2);
-        
         if (common.isEmpty()) {
             System.out.println("No products with >4 stars were reviewed by both customers.");
             return;
         }
-        
         System.out.println("Common Products (>4 stars) reviewed by both:");
         for (int i = 0; i < common.size(); i++) {
             System.out.println("- " + common.get(i).getName());
         }
     }
 
-    /**
-     * Handles viewing all registered customers.
-     * This is used to "prove" that the Add Customer (Option 2) works.
-     */
+    // (handleViewAllCustomers)
     private static void handleViewAllCustomers() {
         System.out.println("--- All Registered Customers ---");
         MyLinkedList<Customer> allCustomers = system.getAllCustomers();
-        
         if (allCustomers.isEmpty()) {
             System.out.println("There are no customers registered yet.");
             return;
         }
-        
-        // Loop and print them
         for (int i = 0; i < allCustomers.size(); i++) {
             Customer c = allCustomers.get(i);
             System.out.println(
@@ -488,103 +502,45 @@ public class Main {
         }
         System.out.println("Total Customers: " + allCustomers.size());
     }
-    // ==========================================================
-    // --- (NEW METHOD 1: Helper for parsing dates) ---
-    // ==========================================================
-    /**
-     * A helper method to robustly ask the user for a date.
-     * It will keep asking until the user enters a valid "yyyy-MM-dd" format.
-     * @param prompt The message to show the user (e.g., "Enter start date:")
-     * @return A valid Date object.
-     */
-    private static Date parseDateFromUser(String prompt) {
-        // We define the *only* format we accept
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = null;
-        boolean validDate = false;
-        
-        while (!validDate) {
-            System.out.print(prompt + " (yyyy-MM-dd): ");
-            String input = scanner.nextLine();
-            
-            try {
-                // Try to parse the user's input
-                date = dateFormat.parse(input);
-                validDate = true; // If it worked, exit the loop
-            } catch (ParseException e) {
-                // If parsing failed (wrong format)
-                System.out.println("Error: Invalid date format. Please use yyyy-MM-dd (e.g., 2025-01-20).");
-            }
-        }
-        return date;
-    }
 
-    // ==========================================================
-    // --- (NEW METHOD 2: The actual feature) ---
-    // ==========================================================
-    /**
-     * Handles finding and listing all orders between two given dates.
-     * This fulfills the requirement from the PDF.
-     */
+    // (handleOrdersBetweenDates)
     private static void handleOrdersBetweenDates() {
         System.out.println("--- Find Orders Between Two Dates ---");
-        
-        // 1. Get the start date (uses our robust helper method)
         Date startDate = parseDateFromUser("Enter Start Date");
-        
-        // 2. Get the end date
         Date endDate = parseDateFromUser("Enter End Date");
-
-        // 3. Call the ECommerceSystem to get the results
         MyLinkedList<Order> orders = system.getOrdersBetweenDates(startDate, endDate);
-        
-        // 4. Print the results
         if (orders.isEmpty()) {
-            System.out.println("No orders found between " + startDate + " and " + endDate);
+            System.out.println("No orders found between " + dateFormatter.format(startDate) + " and " + dateFormatter.format(endDate));
         } else {
             System.out.println("--- Orders Found ---");
             for (int i = 0; i < orders.size(); i++) {
                 Order o = orders.get(i);
-            System.out.println(
-                "- Order ID: " + o.getOrderId() +
-                " | Date: " + dateFormatter.format(o.getOrderDate()) +
-                " | Status: " + o.getStatus() +
-                " | Total: " + o.getTotalPrice()
-            );
-    // ...
+                System.out.println(
+                    "- Order ID: " + o.getOrderId() +
+                    " | Customer ID: " + o.getCustomerId() +
+                    " | Date: " + dateFormatter.format(o.getOrderDate()) +
+                    " | Total: " + o.getTotalPrice()
+                );
             }
             System.out.println("Found " + orders.size() + " orders.");
         }
     }
-    // ==========================================================
-    // --- (NEW METHOD: To view a customer's order history) ---
-    // ==========================================================
-    /**
-     * Handles finding and listing all orders for a specific customer.
-     * This proves that the "Place Order" (Option 3) works.
-     */
+
+    // (handleViewCustomerOrders)
     private static void handleViewCustomerOrders() {
         System.out.println("--- View Customer Order History ---");
         System.out.print("Enter Customer ID: ");
         String customerId = scanner.nextLine();
-        
-        // 1. Find the customer
         Customer c = system.findCustomerById(customerId);
         if (c == null) {
             System.out.println("ERROR: Customer ID not found.");
             return;
         }
-        
-        // 2. Get their history (this comes from the Customer class)
         MyLinkedList<Order> orders = c.getOrderHistory();
-        
-        // 3. Check if they have any orders
         if (orders.isEmpty()) {
             System.out.println("Customer '" + c.getName() + "' has no orders on record.");
             return;
         }
-        
-        // 4. Print all their orders
         System.out.println("--- Orders for " + c.getName() + " ---");
         for (int i = 0; i < orders.size(); i++) {
             Order o = orders.get(i);
@@ -594,27 +550,28 @@ public class Main {
                 " | Status: " + o.getStatus() +
                 " | Total: " + o.getTotalPrice()
             );
-    // ...
-            // (Optional: We can also loop through o.getProducts() to show items)
+            System.out.println("  Items Purchased:");
+            MyLinkedList<Product> productsInOrder = o.getProducts();
+            if (productsInOrder.isEmpty()) {
+                System.out.println("    (No items listed for this order - possible data error)");
+            } else {
+                for (int j = 0; j < productsInOrder.size(); j++) {
+                    Product p = productsInOrder.get(j);
+                    System.out.println("    - " + p.getName() + " (" + p.getPrice() + ")");
+                }
+            }
         }
         System.out.println("Found " + orders.size() + " total orders.");
     }
-    // ==========================================================
-    // --- (NEW METHOD: To view ALL products) ---
-    // ==========================================================
-    /**
-     * Handles finding and listing all products in the system.
-     */
+    
+    // (handleViewAllProducts)
     private static void handleViewAllProducts() {
         System.out.println("--- All Products in System ---");
         MyLinkedList<Product> allProducts = system.getAllProducts();
-        
         if (allProducts.isEmpty()) {
             System.out.println("There are no products in the system.");
             return;
         }
-        
-        // نلف على القائمة ونطبعهم
         for (int i = 0; i < allProducts.size(); i++) {
             Product p = allProducts.get(i);
             System.out.println(
@@ -628,21 +585,14 @@ public class Main {
         System.out.println("Total Products: " + allProducts.size());
     }
 
-    // ==========================================================
-    // --- (NEW METHOD: To view ALL orders) ---
-    // ==========================================================
-    /**
-     * Handles finding and listing all orders in the system.
-     */
+    // (handleViewAllOrders)
     private static void handleViewAllOrders() {
         System.out.println("--- All Orders in System ---");
         MyLinkedList<Order> allOrders = system.getAllOrders();
-        
         if (allOrders.isEmpty()) {
             System.out.println("There are no orders in the system.");
             return;
         }
-        
         for (int i = 0; i < allOrders.size(); i++) {
             Order o = allOrders.get(i);
             System.out.println(
@@ -652,46 +602,31 @@ public class Main {
                 " | Status: " + o.getStatus() +
                 " | Total: " + o.getTotalPrice()
             );
-    // ...
         }
         System.out.println("Total Orders: " + allOrders.size());
     }
     
-    // ==========================================================
-    // --- (NEW METHODS FOR OPTIONS 15-19) ---
-    // ==========================================================
-
-    /**
-     * Handles Removing a product from the system.
-     */
+    // (handleRemoveProduct)
     private static void handleRemoveProduct() {
         System.out.println("--- Remove a Product ---");
         System.out.print("Enter the Product ID to remove: ");
         String productId = scanner.nextLine();
-        
-        // We must check if the product exists first
         Product p = system.findProductById(productId);
         if (p == null) {
             System.out.println("ERROR: Product ID not found. No product was removed.");
             return;
         }
-        
-        // If it exists, remove it
         system.removeProduct(productId);
         System.out.println("SUCCESS: Product '" + p.getName() + "' (ID: " + productId + ") has been removed.");
-        System.out.println("Note: This change is temporary and will be saved only on exit (Option 0).");
+        System.out.println("(Note: This change is temporary and will be lost on exit.)"); // No-Save message
     }
 
-    /**
-     * Handles Searching for a product by its name.
-     */
+    // (handleSearchByName)
     private static void handleSearchByName() {
         System.out.println("--- Search Product by Name ---");
         System.out.print("Enter Product Name to search for: ");
         String name = scanner.nextLine();
-        
         Product p = system.findProductByName(name);
-        
         if (p != null) {
             System.out.println("--- Product Found ---");
             System.out.println("  ID: " + p.getProductId());
@@ -704,43 +639,33 @@ public class Main {
         }
     }
 
-    /**
-     * Handles Canceling an order.
-     */
+    // (handleCancelOrder)
     private static void handleCancelOrder() {
         System.out.println("--- Cancel an Order ---");
         System.out.print("Enter the Order ID to cancel: ");
         String orderId = scanner.nextLine();
-        
         boolean success = system.cancelOrder(orderId);
-        
         if (success) {
             System.out.println("SUCCESS: Order ID " + orderId + " has been marked as 'canceled'.");
-            System.out.println("Note: This change is temporary and will be saved only on exit (Option 0).");
+            System.out.println("(Note: This change is temporary and will be lost on exit.)"); // No-Save message
         } else {
             System.out.println("ERROR: Order ID not found.");
         }
     }
 
-    /**
-     * Handles Searching for an order by its ID.
-     */
+    // (handleSearchOrderById)
     private static void handleSearchOrderById() {
         System.out.println("--- Search Order by ID ---");
         System.out.print("Enter Order ID to search for: ");
         String orderId = scanner.nextLine();
-        
         Order o = system.findOrderById(orderId);
-        
         if (o != null) {
             System.out.println("--- Order Found ---");
             System.out.println("  Order ID: " + o.getOrderId());
             System.out.println("  Customer ID: " + o.getCustomerId());
-            System.out.println("  Date: " + dateFormatter.format(o.getOrderDate())); // Using our formatter
+            System.out.println("  Date: " + dateFormatter.format(o.getOrderDate())); 
             System.out.println("  Status: " + o.getStatus());
             System.out.println("  Total Price: " + o.getTotalPrice());
-            
-            // Also print the products in that order
             System.out.println("  Products in this order:");
             MyLinkedList<Product> products = o.getProducts();
             for(int i = 0; i < products.size(); i++) {
@@ -751,30 +676,19 @@ public class Main {
         }
     }
 
-    /**
-     * Handles Editing an existing review.
-     */
+    // (handleEditReview)
     private static void handleEditReview() {
         System.out.println("--- Edit a Review ---");
-        
-        // 1. Find the product
-        System.out.print("Enter the Product ID for the review you want to edit: ");
+        System.out.print("Enter the Product ID for the review: ");
         String productId = scanner.nextLine();
         Product p = system.findProductById(productId);
         if (p == null) {
             System.out.println("ERROR: Product ID not found.");
             return;
         }
-
-        // 2. Find the customer (to identify the review)
-        System.out.print("Enter *your* Customer ID (the review's author): ");
+        System.out.print("Enter *your* Customer ID (the author): ");
         String customerId = scanner.nextLine();
-        if (system.findCustomerById(customerId) == null) {
-            System.out.println("ERROR: Customer ID not found.");
-            return;
-        }
         
-        // 3. Get the new rating
         int rating = 0;
         boolean validRating = false;
         while (!validRating) {
@@ -787,25 +701,125 @@ public class Main {
                     System.out.println("Error: Rating must be between 1 and 5.");
                 }
             } catch (Exception e) {
-                System.out.println("Error: Invalid input. Please enter a whole number.");
+                System.out.println("Error: Invalid input.");
                 scanner.nextLine();
             }
         }
         scanner.nextLine(); // Consume newline
-
-        // 4. Get the new comment
+        
         System.out.print("Enter New Comment: ");
         String comment = scanner.nextLine();
         
-        // 5. Call the edit method
         boolean success = p.editReview(customerId, comment, rating);
-        
         if (success) {
             System.out.println("SUCCESS: Your review for '" + p.getName() + "' has been updated.");
-            System.out.println("Note: This change is temporary and will be saved only on exit (Option 0).");
+            System.out.println("(Note: This change is temporary and will be lost on exit.)"); // No-Save message
         } else {
-            System.out.println("ERROR: No review from customer " + customerId + " was found for this product.");
+            System.out.println("ERROR: No review from customer " + customerId + " was found.");
         }
     }
-    
+    // ==========================================================
+    // --- (METHOD: To update any product detail) ---
+    // ==========================================================
+    /**
+     * Handles updating the details of an existing product (Name, Price, or Stock).
+     */
+    private static void handleUpdateProduct() {
+        System.out.println("--- Update Product Details ---");
+        
+        // 1. Find the product
+        System.out.print("Enter the Product ID to update: ");
+        String productId = scanner.nextLine();
+        Product p = system.findProductById(productId);
+        
+        if (p == null) {
+            System.out.println("ERROR: Product ID not found.");
+            return;
+        }
+
+        // 2. Show the "Update" sub-menu
+        System.out.println("What do you want to update for '" + p.getName() + "'?");
+        System.out.println("1. Update Name");
+        System.out.println("2. Update Price");
+        System.out.println("3. Update Stock");
+        System.out.println("0. Cancel");
+        System.out.print("Enter your choice: ");
+        
+        int choice = getUserIntInput();
+
+        // 3. Execute the chosen update
+        switch (choice) {
+            case 1: // Update Name
+                System.out.print("Enter new Name: ");
+                String newName = scanner.nextLine();
+                p.setName(newName); //  setter
+                System.out.println("SUCCESS: Name updated.");
+                break;
+                
+            case 2: // Update Price
+                System.out.print("Enter new Price: ");
+                double newPrice = 0;
+                try {
+                    newPrice = scanner.nextDouble();
+                    p.setPrice(newPrice); //  setter)
+                    System.out.println("SUCCESS: Price updated.");
+                } catch (Exception e) {
+                    System.out.println("Error: Invalid input.");
+                }
+                scanner.nextLine(); // Consume newline
+                break;
+                
+            case 3: // Update Stock
+                System.out.print("Enter new Stock quantity: ");
+                int newStock = 0;
+                try {
+                    newStock = scanner.nextInt();
+                    p.setStock(newStock); //  setter)
+                    System.out.println("SUCCESS: Stock updated.");
+                } catch (Exception e) {
+                    System.out.println("Error: Invalid input.");
+                }
+                scanner.nextLine(); // Consume newline
+                break;
+                
+            case 0: // Cancel
+                System.out.println("Update canceled.");
+                break;
+                
+            default:
+                System.out.println("Invalid choice.");
+        }
+        
+        System.out.println("(Note: This change is temporary and will be lost on exit.)");
+    }
+    // ==========================================================
+    // --- (METHOD: To update an order's status) ---
+    // ==========================================================
+    /**
+     * Handles manually updating the status of an existing order.
+     */
+    private static void handleUpdateOrderStatus() {
+        System.out.println("--- Update Order Status ---");
+        
+        // 1. Find the order
+        System.out.print("Enter the Order ID to update: ");
+        String orderId = scanner.nextLine();
+        Order o = system.findOrderById(orderId);
+        
+        if (o == null) {
+            System.out.println("ERROR: Order ID not found.");
+            return;
+        }
+
+        // 2. Show current status and ask for new one
+        System.out.println("Current status for Order " + o.getOrderId() + " is: " + o.getStatus());
+        System.out.print("Enter new status (e.g., pending, shipped, delivered): ");
+        String newStatus = scanner.nextLine();
+
+        // 3. Call the method in the Order class
+        o.updateStatus(newStatus);
+        
+        System.out.println("SUCCESS: Order status has been updated to '" + newStatus + "'.");
+        System.out.println("(Note: This change is temporary and will be lost on exit.)");
+    }
 }

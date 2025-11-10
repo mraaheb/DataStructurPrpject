@@ -69,27 +69,14 @@ public class Product {
 
     /**
      * Adds a new review to this product's review list.
-     * This fulfills the "Add/edit review" operation. [cite: 10, 13]
+     *  "Add/edit review" operation. 
      * @param review The review object to add.
      */
     public void addReview(Review review) {
         this.reviews.add(review);
     }
 
-    /**
-     * Edits an existing review written by a specific customer.
-     * This fulfills the "Add/edit review" operation. 
-     */
-    public void editReview(String customerId, String newComment, int newRating) {
-        for (int i = 0; i < reviews.size(); i++) {
-            Review r = reviews.get(i); // Using the .get() from MyLinkedList
-            if (r.getCustomerId().equals(customerId)) {
-                r.setTextComment(newComment);
-                r.setRatingScore(newRating);
-                break; // Exit the loop once found and updated
-            }
-        }
-    }
+  
 
     /**
      * Calculates and returns the average rating for this product.
@@ -109,5 +96,26 @@ public class Product {
         }
 
         return sum / reviews.size();
+    }
+   //=========================================================
+
+    /**
+     * Fulfills: "Add/edit review"
+     * Edits an existing review written by a specific customer for this product.
+     * (We already had addReview)
+     */
+    public boolean editReview(String customerId, String newComment, int newRating) {
+        // We must loop through our MyLinkedList to find the review
+        for (int i = 0; i < reviews.size(); i++) {
+            Review r = reviews.get(i); // Using the .get() from MyLinkedList
+            
+            if (r.getCustomerId().equals(customerId)) {
+                // Found it. Now update it using the setters.
+                r.setTextComment(newComment);
+                r.setRatingScore(newRating); // (using int as we agreed)
+                return true; // Found and updated
+            }
+        }
+        return false; // No review found from that customer
     }
 }

@@ -1,122 +1,130 @@
-// Imports needed for File I/O and Date parsing
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
-import java.util.Date; 
+import java.util.Date;
 
 /**
- * The main class that manages the entire e-commerce system.
+ * CSC 212 Project - Phase 2
+ * Class: ECommerceSystem (The Logic Layer)
+ * * This class manages all data (Products, Customers, Orders) using BSTs.
+ * It handles File I/O, searching, insertion, and complex queries.
  */
 public class ECommerceSystem {
 
-    // --- Master Lists ---
-    private MyLinkedList<Product> allProducts;
-    private MyLinkedList<Customer> allCustomers;
-    private MyLinkedList<Order> allOrders;
+    // ==========================================================
+    // --- ATTRIBUTES (Data Storage) ---
+    // ==========================================================
+    
+    // [PHASE 2 Requirement]: Use BST instead of Linear List
+    private BST<Product> allProducts;   // Stores Products sorted by ID
+    private BST<Customer> allCustomers; // Stores Customers sorted by ID
+    private BST<Order> allOrders;       // Stores Orders sorted by ID
 
-    // --- NEW: Auto-Increment Counter for Order IDs ---
-    // We start from 501 (assuming CSV orders are below this)
+    // --- ID Counters (Auto-Increment) ---
     private int orderCounter = 501;
-    private int productCounter = 151; 
-    private int customerCounter = 231;  
+    private int productCounter = 151;
+    private int customerCounter = 231;
+    private int reviewCounter = 501;
 
     /**
-     * Constructor to initialize the system.
+     * Constructor: Initializes the BSTs.
+     * Time Complexity: O(1)
      */
     public ECommerceSystem() {
-        this.allProducts = new MyLinkedList<>();
-        this.allCustomers = new MyLinkedList<>();
-        this.allOrders = new MyLinkedList<>();
-    }
-    
-    // --- : Helper method to get a new, unique order ID ---
-    /**
-     * Generates a new unique Order ID and increments the counter.
-     * @return A new Order ID as a String.
-     */
-    public String getNewOrderId() {
-        // Return the current counter value, then increment it for next time
-        return String.valueOf(orderCounter++); 
-    }
-    
-    // --- : Helper method to get all products (for the menu) ---
-    /**
-     * Returns the entire list of products in the system.
-     * @return The MyLinkedList of all products.
-     */
-    public MyLinkedList<Product> getAllProducts() {
-        return this.allProducts;
+        this.allProducts = new BST<>();
+        this.allCustomers = new BST<>();
+        this.allOrders = new BST<>();
     }
 
+    // ==========================================================
+    // --- HELPER METHODS (ID Generation & List Conversion) ---
+    // ==========================================================
+
+    public String getNewOrderId() { return String.valueOf(orderCounter++); }
+    public String getNewProductId() { return String.valueOf(productCounter++); }
+    public String getNewCustomerId() { return String.valueOf(customerCounter++); }
+    public String getNewReviewId() { return String.valueOf(reviewCounter++); }
+
     /**
-     *  "Read data from CSV file"
-     * This method reads all 4 CSV files to populate the system.
-     * It handles file errors and parsing.
+     * Converts BST to List (In-Order Traversal).
+     * Time Complexity: O(N) - Must visit every node.
+     */
+    public MyLinkedList<Product> getAllProducts() {
+        return allProducts.getAllElements(); 
+    }
+    
+    public MyLinkedList<Customer> getAllCustomers() {
+        return allCustomers.getAllElements(); 
+    }
+    
+    public MyLinkedList<Order> getAllOrders() {
+        return allOrders.getAllElements(); 
+    }
+
+    // ==========================================================
+    // --- SECTION 1: FILE I/O (Reading Data) ---
+    // ==========================================================
+    
+    /**
+     * Reads data from CSV files and populates the BSTs.
+     * Time Complexity: O(N log N) for N records (N inserts * log N per insert).
      */
     public void readDataFromCSV(String productsFile, String customersFile, String ordersFile, String reviewsFile) {
         
-        // 1. Read Customers (customers.csv)
+        // 1. Read Customers -> Insert into BST
         try (Scanner scanner = new Scanner(new File(customersFile))) {
-            scanner.nextLine(); // Skip header
+            scanner.nextLine(); 
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
-                String[] data = line.split(","); // [0]=customerId, [1]=name, [2]=email
+                String[] data = line.split(",");
                 Customer c = new Customer(data[0].trim(), data[1].trim(), data[2].trim());
-                this.registerNewCustomer(c);
+                allCustomers.insert(c); // O(log N)
             }
-            System.out.println("Loaded " + allCustomers.size() + " customers.");
+            System.out.println("Loaded Customers into BST.");
         } catch (FileNotFoundException e) {
             System.err.println("Error reading customers.csv: " + e.getMessage());
         }
 
-        // 2. Read Products (prodcuts.csv)
+        // 2. Read Products -> Insert into BST
         try (Scanner scanner = new Scanner(new File(productsFile))) {
-            scanner.nextLine(); // Skip header
+            scanner.nextLine(); 
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
-                String[] data = line.split(","); // [0]=productId, [1]=name, [2]=price, [3]=stock
+                String[] data = line.split(",");
                 Product p = new Product(
-                    data[0].trim(),                     // productId
-                    data[1].trim(),                     // name
-                    Double.parseDouble(data[2].trim()), // price
-                    Integer.parseInt(data[3].trim())    // stock
+                    data[0].trim(),
+                    data[1].trim(),
+                    Double.parseDouble(data[2].trim()),
+                    Integer.parseInt(data[3].trim())
                 );
-                this.addProduct(p);
+                allProducts.insert(p); // O(log N)
             }
-            System.out.println("Loaded " + allProducts.size() + " products.");
+            System.out.println("Loaded Products into BST.");
         } catch (FileNotFoundException e) {
             System.err.println("Error reading prodcuts.csv: " + e.getMessage());
         }
 
-        // 3. Read Reviews (reviews.csv)
+        // 3. Read Reviews -> Link to Product (Search BST)
         try (Scanner scanner = new Scanner(new File(reviewsFile))) {
-            scanner.nextLine(); // Skip header
+            scanner.nextLine(); 
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
-                
-                // --- THIS IS THE FIX ---
-                // We limit the split to 5 parts.
-                // The 5th part (data[4]) will contain "everything else"
-                // including the commas inside the comment.
-                String[] data = line.split(",", 5); 
+                String[] data = line.split(",", 5);
                 
                 String productId = data[1].trim();
                 String customerId = data[2].trim();
                 int rating = Integer.parseInt(data[3].trim());
-                String comment = data[4].trim(); // This now has the full comment
-
-                // Also, let's remove the quotes ("") if they exist
+                String comment = data[4].trim();
                 if (comment.startsWith("\"") && comment.endsWith("\"")) {
                     comment = comment.substring(1, comment.length() - 1);
                 }
-                // --- END OF FIX ---
-                
+
                 Review r = new Review(customerId, rating, comment);
-                Product p = this.findProductById(productId);
+                Product p = this.findProductById(productId); // O(log N)
                 if (p != null) {
-                    p.addReview(r); 
+                    p.addReview(r); // O(1)
                 }
             }
             System.out.println("Loaded reviews.");
@@ -124,18 +132,18 @@ public class ECommerceSystem {
             System.err.println("Error reading reviews.csv: " + e.getMessage());
         }
 
-        // 4. Read Orders (orders.csv)
+        // 4. Read Orders -> Insert into BST
         try (Scanner scanner = new Scanner(new File(ordersFile))) {
-            scanner.nextLine(); // Skip header
+            scanner.nextLine(); 
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
-                String[] data = line.split(","); 
+                String[] data = line.split(",");
                 
                 String orderId = data[0].trim();
                 String customerId = data[1].trim();
-                String productIdsString = data[2].trim(); 
+                String productIdsString = data[2].trim();
                 Date orderDate = dateFormat.parse(data[4].trim());
                 String status = data[5].trim();
                 
@@ -144,51 +152,75 @@ public class ECommerceSystem {
                 
                 String[] productIds = productIdsString.split(";");
                 for (String pid : productIds) {
-                    Product p = this.findProductById(pid.trim());
+                    Product p = this.findProductById(pid.trim()); // O(log N)
                     if (p != null) {
                         order.addProductToOrder(p);
                     }
                 }
-                this.placeNewOrder(customerId, order);
+                this.placeNewOrder(customerId, order); // O(log N)
             }
-            System.out.println("Loaded " + allOrders.size() + " orders.");
-        } catch (FileNotFoundException e) {
+            System.out.println("Loaded orders.");
+        } catch (Exception e) {
             System.err.println("Error reading orders.csv: " + e.getMessage());
-        } catch (ParseException e) {
-            System.err.println("Error parsing date in orders.csv: " + e.getMessage());
         }
     }
 
-    // --- ( methods: addProduct, findProductById, getTop3Products, etc...) ---
-    // =================================================================
-    // --- SECTION 2: Core Operations (from PDF Page 1) ---
-    // =================================================================
+    // ==========================================================
+    // --- SECTION 2: CORE OPERATIONS (BST Logic) ---
+    // ==========================================================
 
     // --- Product Operations ---
+    
+    /**
+     * Adds a product to the BST.
+     * Time Complexity: O(log N) - Standard BST Insertion.
+     */
     public void addProduct(Product product) {
-        allProducts.add(product);
+        allProducts.insert(product);
     }
+
+    /**
+     * Removes a product from the BST.
+     * Time Complexity: O(log N) - Standard BST Deletion.
+     */
     public void removeProduct(String productId) {
-        for (int i = 0; i < allProducts.size(); i++) {
-            if (allProducts.get(i).getProductId().equals(productId)) {
-                allProducts.remove(i);
-                break;
-            }
-        }
+        Product dummy = new Product(productId, "", 0, 0);
+        allProducts.delete(dummy);
     }
+
+    /**
+     * Searches for a product by ID using BST logic.
+     * Time Complexity: O(log N) - Standard BST Search.
+     */
     public Product findProductById(String productId) {
-        for (int i = 0; i < allProducts.size(); i++) {
-            Product p = allProducts.get(i);
-            if (p.getProductId().equals(productId)) {
+        Product dummy = new Product(productId, "", 0, 0);
+        return allProducts.search(dummy);
+    }
+    
+    /**
+     * Searches for a product by Name.
+     * Time Complexity: O(N) - Must traverse all nodes (tree is not sorted by name).
+     */
+    public Product findProductByName(String name) {
+        MyLinkedList<Product> list = getAllProducts();
+        for (int i = 0; i < list.size(); i++) {
+            Product p = list.get(i);
+            if (p.getName().equalsIgnoreCase(name)) {
                 return p;
             }
         }
-        return null; // Not found
+        return null;
     }
+
+    /**
+     * Finds all products with 0 stock.
+     * Time Complexity: O(N) - Must check every product.
+     */
     public MyLinkedList<Product> getOutOfStockProducts() {
         MyLinkedList<Product> outOfStock = new MyLinkedList<>();
-        for (int i = 0; i < allProducts.size(); i++) {
-            Product p = allProducts.get(i);
+        MyLinkedList<Product> list = getAllProducts(); 
+        for (int i = 0; i < list.size(); i++) {
+            Product p = list.get(i);
             if (p.getStock() == 0) {
                 outOfStock.add(p);
             }
@@ -197,47 +229,76 @@ public class ECommerceSystem {
     }
 
     // --- Customer Operations ---
+
+    /**
+     * Registers a new customer into the BST.
+     * Time Complexity: O(log N)
+     */
     public void registerNewCustomer(Customer customer) {
-        allCustomers.add(customer);
+        allCustomers.insert(customer);
     }
+
+    /**
+     * Finds a customer by ID using BST logic.
+     * Time Complexity: O(log N)
+     */
     public Customer findCustomerById(String customerId) {
-        for (int i = 0; i < allCustomers.size(); i++) {
-            Customer c = allCustomers.get(i);
-            if (c.getCustomerId().equals(customerId)) {
-                return c;
-            }
-        }
-        return null; // Not found
+        Customer dummy = new Customer(customerId, "", "");
+        return allCustomers.search(dummy);
     }
 
     // --- Order Operations ---
+
+    /**
+     * Places a new order and stores it in the BST.
+     * Time Complexity: O(log N) (to find customer + insert order)
+     */
     public boolean placeNewOrder(String customerId, Order order) {
-        Customer c = findCustomerById(customerId);
+        Customer c = findCustomerById(customerId); // O(log N)
         if (c != null) {
-            c.addOrderToHistory(order);
-            allOrders.add(order);
+            c.addOrderToHistory(order); // O(1)
+            allOrders.insert(order);    // O(log N)
             return true;
         }
-        return false; // Customer not found
+        return false;
     }
+
+    /**
+     * Finds an order by ID using BST logic.
+     * Time Complexity: O(log N)
+     */
     public Order findOrderById(String orderId) {
-        for (int i = 0; i < allOrders.size(); i++) {
-            Order o = allOrders.get(i);
-            if (o.getOrderId().equals(orderId)) {
-                return o;
-            }
+        Order dummy = new Order(orderId, "", new Date());
+        return allOrders.search(dummy);
+    }
+    
+    /**
+     * Cancels an order by ID.
+     * Time Complexity: O(log N) (Search) + O(1) (Update)
+     */
+    public boolean cancelOrder(String orderId) {
+        Order o = findOrderById(orderId); // O(log N)
+        if (o != null) {
+            o.updateStatus("canceled");
+            return true;
         }
-        return null; // Not found
+        return false;
     }
 
-    // =================================================================
-    // --- SECTION 3: Complex Queries (from PDF Page 2) ---
-    // =================================================================
+    // ==========================================================
+    // --- SECTION 3: COMPLEX QUERIES & REPORTING ---
+    // ==========================================================
 
+    /**
+     * Extracts reviews for a specific customer.
+     * Time Complexity: O(N * R) - N products * R reviews per product.
+     */
     public MyLinkedList<Review> extractCustomerReviews(String customerId) {
         MyLinkedList<Review> customerReviews = new MyLinkedList<>();
-        for (int i = 0; i < allProducts.size(); i++) {
-            Product p = allProducts.get(i);
+        MyLinkedList<Product> list = getAllProducts(); 
+        
+        for (int i = 0; i < list.size(); i++) {
+            Product p = list.get(i);
             MyLinkedList<Review> productReviews = p.getReviews();
             for (int j = 0; j < productReviews.size(); j++) {
                 Review r = productReviews.get(j);
@@ -249,12 +310,17 @@ public class ECommerceSystem {
         return customerReviews;
     }
 
+    /**
+     * Finds Top 3 Products by average rating.
+     * Time Complexity: O(N * R) - Scan all products and calculate avg rating.
+     */
     public MyLinkedList<Product> getTop3Products() {
+        MyLinkedList<Product> list = getAllProducts();
         Product top1 = null, top2 = null, top3 = null;
         double avg1 = -1, avg2 = -1, avg3 = -1;
 
-        for (int i = 0; i < allProducts.size(); i++) {
-            Product p = allProducts.get(i);
+        for (int i = 0; i < list.size(); i++) {
+            Product p = list.get(i);
             double currentAvg = p.getAverageRating(); 
 
             if (currentAvg > avg1) {
@@ -275,10 +341,16 @@ public class ECommerceSystem {
         return top3List;
     }
 
+    /**
+     * Finds orders within a date range.
+     * Time Complexity: O(N) - Must scan all orders (BST not sorted by date).
+     */
     public MyLinkedList<Order> getOrdersBetweenDates(Date startDate, Date endDate) {
         MyLinkedList<Order> result = new MyLinkedList<>();
-        for (int i = 0; i < allOrders.size(); i++) {
-            Order order = allOrders.get(i);
+        MyLinkedList<Order> list = getAllOrders(); 
+        
+        for (int i = 0; i < list.size(); i++) {
+            Order order = list.get(i);
             Date orderDate = order.getOrderDate();
             if (orderDate.after(startDate) && orderDate.before(endDate)) {
                 result.add(order);
@@ -287,29 +359,26 @@ public class ECommerceSystem {
         return result;
     }
 
+    /**
+     * Finds common products reviewed by two customers > 4.0 rating.
+     * Time Complexity: O(N * R)
+     */
     public MyLinkedList<Product> getCommonReviewedProducts(String customerId1, String customerId2) {
         MyLinkedList<Product> finalResult = new MyLinkedList<>();
-        for (int i = 0; i < allProducts.size(); i++) {
-            Product p = allProducts.get(i);
-            
+        MyLinkedList<Product> list = getAllProducts(); 
+        
+        for (int i = 0; i < list.size(); i++) {
+            Product p = list.get(i);
             if (p.getAverageRating() > 4.0) {
                 boolean customer1Reviewed = false;
                 boolean customer2Reviewed = false;
                 MyLinkedList<Review> reviews = p.getReviews();
-                
                 for (int j = 0; j < reviews.size(); j++) {
                     String reviewerId = reviews.get(j).getCustomerId();
-                    if (reviewerId.equals(customerId1)) {
-                        customer1Reviewed = true;
-                    }
-                    if (reviewerId.equals(customerId2)) {
-                        customer2Reviewed = true;
-                    }
-                    if (customer1Reviewed && customer2Reviewed) {
-                        break;
-                    }
+                    if (reviewerId.equals(customerId1)) customer1Reviewed = true;
+                    if (reviewerId.equals(customerId2)) customer2Reviewed = true;
+                    if (customer1Reviewed && customer2Reviewed) break;
                 }
-                
                 if (customer1Reviewed && customer2Reviewed) {
                     finalResult.add(p);
                 }
@@ -318,59 +387,48 @@ public class ECommerceSystem {
         return finalResult;
     }
     
-/**
- * Returns the entire list of customers in the system.
- * @return The MyLinkedList of all customers.
- */
-public MyLinkedList<Customer> getAllCustomers() {
-    return this.allCustomers;
-}
-public String getNewProductId() {
-        return String.valueOf(productCounter++);
-    }
-public String getNewCustomerId() {
-        return String.valueOf(customerCounter++);
-    }
-public MyLinkedList<Order> getAllOrders() {
-        return this.allOrders;
-    }
-// ==========================================================
-    // --- ( METHODS that were missing) ---
     // ==========================================================
-
+    // --- SECTION 4: PHASE 2 NEW ADVANCED QUERIES ---
+    // ==========================================================
+    
     /**
-     *  "Search by ID or name (linear)"
-     * Finds a product by its *name*.
-     * (We already had findById)
+     * Requirement: "Range Query by Price"
+     * Time Complexity: O(N) - In-Order Traversal then linear scan.
      */
-    public Product findProductByName(String name) {
-        for (int i = 0; i < allProducts.size(); i++) {
-            Product p = allProducts.get(i);
-            // Use .equalsIgnoreCase() for a better search
-            if (p.getName().equalsIgnoreCase(name)) {
-                return p;
+    public MyLinkedList<Product> getProductsByPriceRange(double minPrice, double maxPrice) {
+        MyLinkedList<Product> result = new MyLinkedList<>();
+        MyLinkedList<Product> all = getAllProducts(); 
+        
+        for (int i = 0; i < all.size(); i++) {
+            Product p = all.get(i);
+            if (p.getPrice() >= minPrice && p.getPrice() <= maxPrice) {
+                result.add(p);
             }
         }
-        return null; // Not found
+        return result;
     }
-
+    
     /**
-     *  "Create/cancel order"
-     * Cancels an order by updating its status.
-     
+     * Requirement: "List All Customers Sorted"
+     * Time Complexity: O(N) - In-Order Traversal of BST returns sorted data.
      */
-    public boolean cancelOrder(String orderId) {
-        // First, find the order
-        Order o = findOrderById(orderId);
-        
-        if (o != null) {
-            // If found, update its status
-            o.updateStatus("canceled");
-            
-            // (Optional: We should also return the stock)
-            // (But for simplicity, we just cancel it)
-            return true; // Success
+    public MyLinkedList<Customer> getCustomersSorted() {
+        return getAllCustomers(); // BST inherently sorts by ID
+    }
+    
+    // --- Additional Helper Queries ---
+    
+    public Product getHighestPriceProduct() {
+        MyLinkedList<Product> list = getAllProducts();
+        Product maxP = null;
+        double maxPrice = -1;
+        for (int i = 0; i < list.size(); i++) {
+            Product p = list.get(i);
+            if (p.getPrice() > maxPrice) {
+                maxPrice = p.getPrice();
+                maxP = p;
+            }
         }
-        return false; // Order not found
+        return maxP;
     }
 }

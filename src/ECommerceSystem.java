@@ -431,4 +431,36 @@ public class ECommerceSystem {
         }
         return maxP;
     }
+    /**
+     * [Phase 2 Requirement]: "List All Customers Sorted Alphabetically"
+     * Manually sorts customers by Name using Bubble Sort.
+     * Time Complexity: O(N^2)
+     */
+    public MyLinkedList<Customer> getCustomersSortedByName() {
+        // 1. Get all customers (currently sorted by ID from BST)
+        MyLinkedList<Customer> list = getAllCustomers();
+        int n = list.size();
+        
+        // 2. Convert to array for easier sorting
+        Customer[] arr = new Customer[n];
+        for(int i=0; i<n; i++) arr[i] = list.get(i);
+        
+        // 3. Bubble Sort by Name
+        for (int i = 0; i < n-1; i++) {
+            for (int j = 0; j < n-i-1; j++) {
+                if (arr[j].getName().compareToIgnoreCase(arr[j+1].getName()) > 0) {
+                    // Swap
+                    Customer temp = arr[j];
+                    arr[j] = arr[j+1];
+                    arr[j+1] = temp;
+                }
+            }
+        }
+        
+        // 4. Convert back to LinkedList
+        MyLinkedList<Customer> sortedList = new MyLinkedList<>();
+        for(Customer c : arr) sortedList.add(c);
+        
+        return sortedList;
+    }
 }

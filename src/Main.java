@@ -523,16 +523,46 @@ public class Main {
     }
 
     /** [PHASE 2] Requirement: Display Customers Who Reviewed a Product */
+   /**
+     * Requirement: "Given a Product ID, Display All Customers Who Reviewed It"
+     * IMPROVED: Now fetches and displays Customer NAME instead of just ID.
+     */
     private static void handleListProductReviews() {
+        System.out.println("--- List Customers Who Reviewed a Product ---");
         System.out.print("Enter Product ID: ");
-        Product p = system.findProductById(scanner.nextLine());
-        if (p != null) {
-            MyLinkedList<Review> reviews = p.getReviews();
-            System.out.println("Customers who reviewed '" + p.getName() + "':");
-            for(int i=0; i<reviews.size(); i++) {
-                System.out.println("- Rating: " + reviews.get(i).getRatingScore() + " | " + reviews.get(i).getTextComment());
-            }
-        } else System.out.println("Product not found.");
+        String productId = scanner.nextLine();
+        
+        // 1. Find Product
+        Product p = system.findProductById(productId);
+        if (p == null) {
+            System.out.println("ERROR: Product ID not found.");
+            return;
+        }
+        
+        // 2. Get Reviews
+        MyLinkedList<Review> reviews = p.getReviews();
+        if (reviews.isEmpty()) {
+            System.out.println("Product '" + p.getName() + "' has no reviews yet.");
+            return;
+        }
+        
+        System.out.println("Customers who reviewed '" + p.getName() + "':");
+        
+        // 3. Loop and Fetch Customer Details
+        for(int i=0; i<reviews.size(); i++) {
+            Review r = reviews.get(i);
+            String custId = r.getCustomerId();
+            
+            // --- THIS IS THE NEW PART ---
+            // We use the ID to find the Customer object from the tree
+            Customer c = system.findCustomerById(custId);
+            
+            String custName = (c != null) ? c.getName() : "Unknown Customer";
+            // ----------------------------
+
+            System.out.println("- Name: " + custName + " (ID: " + custId + ") | Rating: " + r.getRatingScore() + " | " + r.getTextComment());
+        }
+        System.out.println("Total Reviews: " + reviews.size());
     }
 
     /** [PHASE 1] Requirement: Find Reviews by Customer */

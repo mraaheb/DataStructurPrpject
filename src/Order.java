@@ -1,44 +1,49 @@
-// We need this for the 'orderDate' attribute
 import java.util.Date; 
 
 /**
- * Represents a single order placed by a customer.
- * It contains a list of products, the total price, 
- * date, and status. 
+ * CSC 212 Project
+ * Class: Order
+ * * Represents a single customer order in the e-commerce system.
+ * * DESIGN CHOICE:
+ * Each order maintains its own list of products using our custom 'MyLinkedList'.
+ * This encapsulates the order details within the order object itself.
+ * * PHASE 2 UPDATE:
+ * Implements 'Comparable<Order>' to allow sorting and storage in a BST/AVL Tree
+ * based on the unique 'orderId'.
  */
-public class Order {
+public class Order implements Comparable<Order> {
 
-    // --- Attributes --- 
-    private String orderId;
-    private String customerId; // Reference to the customer 
-    private MyLinkedList<Product> products; // The list of products in this order 
-    private double totalPrice; // The total price of the order 
-    private Date orderDate; // The date the order was placed 
-    private String status; // e.g., "pending", "shipped", "delivered" 
+    // ==========================================================
+    // --- ATTRIBUTES ---
+    // ==========================================================
+    
+    private String orderId;      // Unique identifier for the order
+    private String customerId;   // Reference to the customer who placed the order
+    private double totalPrice;   // Total cost of all products in the order
+    private Date orderDate;      // Date when the order was placed
+    private String status;       // e.g., "pending", "shipped", "canceled"
+
+    // [PHASE 1 Requirement]: "list of products"
+    // We use MyLinkedList to store the items purchased in this specific order.
+    private MyLinkedList<Product> products; 
 
     /**
      * Constructor to create a new, pending order.
+     * Initializes attributes and creates an empty list for products.
      */
     public Order(String orderId, String customerId, Date orderDate) {
         this.orderId = orderId;
         this.customerId = customerId;
         this.orderDate = orderDate;
         
-        this.products = new MyLinkedList<>(); // Initialize our custom list
+        this.products = new MyLinkedList<>(); // Create empty product list
         this.status = "pending"; // Default status
-        this.totalPrice = 0.0;
+        this.totalPrice = 0.0;   // Initial price
     }
 
-    /**
-     * Adds a product to this order and updates the total price.
-     * @param product The product to add.
-     */
-    public void addProductToOrder(Product product) {
-        this.products.add(product);
-        this.totalPrice += product.getPrice(); // Update the total
-    }
-
-    // --- Getters ---
+    // ==========================================================
+    // --- GETTERS (Accessors) ---
+    // ==========================================================
     
     public String getOrderId() {
         return orderId;
@@ -64,14 +69,43 @@ public class Order {
         return status;
     }
 
-    // --- Core Operations ---
+    // ==========================================================
+    // --- CORE OPERATIONS (Business Logic) ---
+    // ==========================================================
 
     /**
-     * Updates the status of the order.
-     *  "Update order status" operation. 
-     * @param newStatus The new status (e.g., "shipped").
+     * [PHASE 1 Requirement]: Helper for "Place a new order"
+     * Adds a product to this order's internal list and updates the total price.
+     * @param product The product to add.
+     */
+    public void addProductToOrder(Product product) {
+        this.products.add(product);
+        this.totalPrice += product.getPrice(); // Automatically update total
+    }
+
+    /**
+     * [PHASE 1 Requirement]: "Update order status"
+     * Updates the status of the order (e.g., from "pending" to "shipped").
+     * @param newStatus The new status string.
      */
     public void updateStatus(String newStatus) {
         this.status = newStatus;
+    }
+
+    // ==========================================================
+    // --- PHASE 2 OPERATIONS (Sorting & Trees) ---
+    // ==========================================================
+
+    /**
+     * [PHASE 2 Requirement]: "Orders... stored using a BST... Keyed by orderId"
+     * This method defines the natural ordering of Orders based on their ID.
+     * It allows the BST to decide whether to go Left or Right during insertion/search.
+     * * @param other The other order to compare against.
+     * @return negative if this < other, zero if equal, positive if this > other.
+     */
+    @Override
+    public int compareTo(Order other) {
+        // Delegate comparison to the String class's compareTo method
+        return this.orderId.compareTo(other.getOrderId());
     }
 }

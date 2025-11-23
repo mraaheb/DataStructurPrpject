@@ -133,6 +133,7 @@ public class Main {
             System.out.println("6. Search Order by ID");
             System.out.println("7. View All Orders");
             System.out.println("8. View Order History for a Customer");
+            System.out.println("9. Search Customer by ID");
             System.out.println("------------------------------------------");
             System.out.println("0. Return to Main Menu");
             System.out.print("Enter your choice: ");
@@ -147,6 +148,7 @@ public class Main {
                 case 6: handleSearchOrderById(); break;
                 case 7: handleViewAllOrders(); break;
                 case 8: handleViewCustomerOrders(); break;
+                case 9: handleSearchCustomerById(); break;
                 case 0: inCustomerMenu = false; break;
                 default: System.out.println("Invalid choice.");
             }
@@ -586,6 +588,26 @@ public class Main {
         for(int i=0; i<all.size(); i++) {
             Product p = all.get(i);
             System.out.println("- " + p.getName() + " | ID: " + p.getProductId() + " | Price: " + p.getPrice());
+        }
+    }
+    /**
+     * Requirement: "Search Customer: via BST/AVL"
+     */
+    private static void handleSearchCustomerById() {
+        System.out.println("--- Search Customer by ID ---");
+        System.out.print("Enter Customer ID: ");
+        String id = scanner.nextLine();
+        
+        // Calls BST Search (O(log n))
+        Customer c = system.findCustomerById(id);
+        
+        if (c != null) {
+            System.out.println("--- Customer Found ---");
+            System.out.println("  ID: " + c.getCustomerId());
+            System.out.println("  Name: " + c.getName());
+            System.out.println("  Email: " + c.getEmail());
+        } else {
+            System.out.println("ERROR: Customer ID not found.");
         }
     }
 }

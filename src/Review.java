@@ -1,28 +1,26 @@
-
-
 /**
- *
- * @author mraah
- */
-/**
- * Represents a single product review.
- * This class holds the rating score and text comment.
+ * CSC 212 Project
+ * Class: Review
+ * * Represents a single review posted by a customer for a specific product.
+ * * DESIGN CHOICE:
+ * We include 'customerId' here to link the review back to its author.
+ * This enables the "Find all reviews by a customer" requirement efficiently.
  */
 public class Review {
 
-    // Attributes as specified 
-    private int ratingScore; // Score from 1-5
-    private String textComment;
-    
-    // We add this attribute to know *who* wrote the review.
-    // This is essential for the requirement: "Extract reviews from a specific customer" 
-    private String customerId; 
+    // ==========================================================
+    // --- ATTRIBUTES ---
+    // ==========================================================
+
+    private String customerId;   // The ID of the customer who wrote this review
+    private int ratingScore;     // Rating score (1-5)
+    private String textComment;  // The text content of the review
 
     /**
      * Constructor to create a new Review.
-     * @param customerId The ID of the customer who wrote the review.
-     * @param ratingScore The score (1-5).
-     * @param textComment The text of the review.
+     * @param customerId The ID of the author (Customer).
+     * @param ratingScore The score given (must be 1-5).
+     * @param textComment The review text.
      */
     public Review(String customerId, int ratingScore, String textComment) {
         this.customerId = customerId;
@@ -30,8 +28,13 @@ public class Review {
         this.textComment = textComment;
     }
 
-    // --- Getters ---
-    // We need getters to read the data later.
+    // ==========================================================
+    // --- GETTERS (Accessors) ---
+    // ==========================================================
+
+    public String getCustomerId() {
+        return customerId;
+    }
 
     public int getRatingScore() {
         return ratingScore;
@@ -41,13 +44,12 @@ public class Review {
         return textComment;
     }
 
-    public String getCustomerId() {
-        return customerId;
-    }
+    // ==========================================================
+    // --- SETTERS (Mutators) ---
+    // [PHASE 1 Requirement]: "Edit review"
+    // These allow updating the review content and rating.
+    // ==========================================================
 
-    // --- Setters ---
-    // We need setters for the "edit review" operation 
-    
     public void setRatingScore(int ratingScore) {
         this.ratingScore = ratingScore;
     }

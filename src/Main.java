@@ -120,20 +120,21 @@ public class Main {
      * Sub-Menu 2: Manages Customers and Orders.
      * Covers requirements: Register, Place/Cancel Order, View History.
      */
-    private static void handleCustomerOrderManagement() {
+  private static void handleCustomerOrderManagement() {
         boolean inCustomerMenu = true;
         while (inCustomerMenu) {
             System.out.println("\n--- [Customer & Order Management Menu] ---");
-            System.out.println("1. Register a new Customer (BST Insert)");
-            System.out.println("2. View All Customers (Sorted by ID)");
+            System.out.println("1. Register a new Customer");
+            System.out.println("2. View All Customers (Sorted by ID)"); // الموجود
+            System.out.println("3. View All Customers (Sorted Alphabetically)"); // <-- الجديد
             System.out.println("---");
-            System.out.println("3. Place a new Order");
-            System.out.println("4. Cancel an Order");
-            System.out.println("5. Update an Order's Status");
-            System.out.println("6. Search Order by ID");
-            System.out.println("7. View All Orders");
-            System.out.println("8. View Order History for a Customer");
-            System.out.println("9. Search Customer by ID");
+            System.out.println("4. Place a new Order"); // (نعدل الأرقام الباقية)
+            System.out.println("5. Cancel an Order");
+            System.out.println("6. Update an Order's Status");
+            System.out.println("7. Search Order by ID");
+            System.out.println("8. View All Orders");
+            System.out.println("9. View Order History for a Customer");
+            System.out.println("10. Search Customer by ID");
             System.out.println("------------------------------------------");
             System.out.println("0. Return to Main Menu");
             System.out.print("Enter your choice: ");
@@ -142,13 +143,14 @@ public class Main {
             switch (choice) {
                 case 1: handleRegisterCustomer(); break;
                 case 2: handleListSortedCustomers(); break; // Phase 2 Feature
-                case 3: handlePlaceOrder(); break;
-                case 4: handleCancelOrder(); break;
-                case 5: handleUpdateOrderStatus(); break;
-                case 6: handleSearchOrderById(); break;
-                case 7: handleViewAllOrders(); break;
-                case 8: handleViewCustomerOrders(); break;
-                case 9: handleSearchCustomerById(); break;
+               case 3: handleListSortedCustomersByName(); break; // <-- الجديد
+                case 4: handlePlaceOrder(); break;
+                case 5: handleCancelOrder(); break;
+                case 6: handleUpdateOrderStatus(); break;
+                case 7: handleSearchOrderById(); break;
+                case 8: handleViewAllOrders(); break;
+                case 9: handleViewCustomerOrders(); break;
+                case 10: handleSearchCustomerById(); break;
                 case 0: inCustomerMenu = false; break;
                 default: System.out.println("Invalid choice.");
             }
@@ -544,12 +546,19 @@ public class Main {
     private static void handlePriceRangeQuery() {
         System.out.println("--- Search Products by Price Range ---");
         System.out.print("Enter Min Price: ");
-        double min = 0; try { min = scanner.nextDouble(); } catch(Exception e){} scanner.nextLine();
+        double min = 0;
+        try { min = scanner.nextDouble(); } 
+        catch(Exception e){}
+        scanner.nextLine();
         System.out.print("Enter Max Price: ");
-        double max = 0; try { max = scanner.nextDouble(); } catch(Exception e){} scanner.nextLine();
+        double max = 0; 
+        try { max = scanner.nextDouble(); }
+        catch(Exception e){}
+        scanner.nextLine();
 
         MyLinkedList<Product> results = system.getProductsByPriceRange(min, max);
-        if (results.isEmpty()) System.out.println("No products found.");
+        if (results.isEmpty())
+            System.out.println("No products found.");
         else {
             for (int i = 0; i < results.size(); i++) {
                 System.out.println("- " + results.get(i).getName() + " (" + results.get(i).getPrice() + ")");
@@ -609,5 +618,23 @@ public class Main {
         } else {
             System.out.println("ERROR: Customer ID not found.");
         }
+    }
+    /**
+     * Handles listing all customers sorted Alphabetically by Name.
+     */
+    private static void handleListSortedCustomersByName() {
+        System.out.println("--- All Customers (Sorted by Name) ---");
+        MyLinkedList<Customer> list = system.getCustomersSortedByName();
+        
+        if (list.isEmpty()) {
+            System.out.println("No customers registered.");
+            return;
+        }
+        
+        for (int i = 0; i < list.size(); i++) {
+            Customer c = list.get(i);
+            System.out.println("- Name: " + c.getName() + " | ID: " + c.getCustomerId() + " | " + c.getEmail());
+        }
+        System.out.println("Total: " + list.size());
     }
 }

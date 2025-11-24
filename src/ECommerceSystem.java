@@ -17,10 +17,10 @@ public class ECommerceSystem {
     // --- ATTRIBUTES (Data Storage) ---
     // ==========================================================
     
-    // [PHASE 2 Requirement]: Use BST instead of Linear List
-    private BST<Product> allProducts;   // Stores Products sorted by ID
-    private BST<Customer> allCustomers; // Stores Customers sorted by ID
-    private BST<Order> allOrders;       // Stores Orders sorted by ID
+    // [PHASE 2 Requirement]: Use AVL instead of Linear List
+    private AVLTree<Product> allProducts;   // Stores Products sorted by ID
+    private AVLTree<Customer>allCustomers; // Stores Customers sorted by ID
+    private AVLTree<Order> allOrders;       // Stores Orders sorted by ID
 
     // --- ID Counters (Auto-Increment) ---
     private int orderCounter = 501;
@@ -33,9 +33,9 @@ public class ECommerceSystem {
      * Time Complexity: O(1)
      */
     public ECommerceSystem() {
-        this.allProducts = new BST<>();
-        this.allCustomers = new BST<>();
-        this.allOrders = new BST<>();
+        this.allProducts = new AVLTree<>();
+        this.allCustomers = new AVLTree<>();
+        this.allOrders = new AVLTree<>();
     }
 
     // ==========================================================
@@ -82,7 +82,7 @@ public class ECommerceSystem {
                 Customer c = new Customer(data[0].trim(), data[1].trim(), data[2].trim());
                 allCustomers.insert(c); // O(log N)
             }
-            System.out.println("Loaded Customers into BST.");
+            System.out.println("Loaded Customers into AVL.");
         } catch (FileNotFoundException e) {
             System.err.println("Error reading customers.csv: " + e.getMessage());
         }
@@ -101,7 +101,7 @@ public class ECommerceSystem {
                 );
                 allProducts.insert(p); // O(log N)
             }
-            System.out.println("Loaded Products into BST.");
+            System.out.println("Loaded Products into AVL.");
         } catch (FileNotFoundException e) {
             System.err.println("Error reading prodcuts.csv: " + e.getMessage());
         }

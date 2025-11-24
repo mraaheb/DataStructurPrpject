@@ -29,10 +29,11 @@ public class Main {
         System.out.println(">>> Initializing E-Commerce System (Phase 2)...");
         
         // 1. Load Data from CSV Files
-        // This populates our BSTs (Products/Customers) and LinkedList (Orders)
+        // This populates our AVL Trees (Products / Customers / Orders)
+
         try {
             system.readDataFromCSV("prodcuts.csv", "customers.csv", "orders.csv", "reviews.csv");
-            System.out.println(">>> Data Loaded Successfully into BSTs and Lists.");
+                System.out.println(">>> Data Loaded Successfully into AVLs and Lists.");
         } catch (Exception e) {
             System.err.println("FATAL ERROR: Could not load data files. Exiting.");
             e.printStackTrace();
@@ -488,24 +489,62 @@ public class Main {
     }
 
     // --- 3. REPORTS & QUERIES ---
-
-    /** [PHASE 1] Requirement: Add Review */
+   
+/**
+     * [PHASE 1 Requirement]: Add Review
+     * Ensures the correct customerId is stored and passed, fixing the scope issue.
+     */
     private static void handleAddReview() {
-        System.out.print("Enter Product ID: ");
-        Product p = system.findProductById(scanner.nextLine());
-        if (p == null) { System.out.println("Product not found."); return; }
-        System.out.print("Enter Customer ID: ");
-        if (system.findCustomerById(scanner.nextLine()) == null) { System.out.println("Customer not found."); return; }
+ 
         
-        System.out.print("Rating (1-5): ");
-        int rating = getUserIntInput();
-        System.out.print("Comment: ");
-        String comment = scanner.nextLine();
-        
-        p.addReview(new Review("temp", rating, comment)); 
-        System.out.println("Review Added.");
-    }
+        // 1. Find Product ID
+        System.out.print("Enter Product ID to review: ");
+        String productId = scanner.nextLine();
+        Product product = system.findProductById(productId);
+        if (product == null) {
+            System.out.println("ERROR: Product ID not found.");
+            return;
+        }
 
+        // 2. Gather and Validate Customer ID (Storing the ID)
+        String customerId = null; // نجهز المتغير هنا
+        Customer customer = null;
+        
+        while(customer == null) {
+            System.out.print("Enter your Customer ID: ");
+            customerId = scanner.nextLine(); // <-- هنا نخزن القيمة بوضوح
+            customer = system.findCustomerById(customerId); // نبحث عنه
+            
+            if (customer == null) {
+                System.out.println("ERROR: Customer ID not found. Try again.");
+            }
+        }
+        
+        // 3. Rating Validation 
+        int rating = 0;
+        boolean validRating = false;
+        while (!validRating) {
+            System.out.print("Enter Rating (a whole number 1-5): ");
+            try {
+                rating = scanner.nextInt();
+                if (rating >= 1 && rating <= 5) { validRating = true; } 
+                else { System.out.println("Error: Rating must be between 1 and 5."); }
+            } catch (Exception e) {
+                System.out.println("Error: Invalid input.");
+                scanner.nextLine(); 
+            }
+        }
+        scanner.nextLine(); // Consume newline
+
+        System.out.print("Enter Comment: ");
+        String comment = scanner.nextLine();
+
+        // 4. Create the Review object using the stored customerId 
+        Review review = new Review(customerId, rating, comment); 
+        product.addReview(review);
+        
+        System.out.println("SUCCESS: Your review for '" + product.getName() + "' has been added.");
+    }
     /** [PHASE 1] Requirement: Edit Review */
     private static void handleEditReview() {
         System.out.println("--- Edit Review ---");
@@ -521,11 +560,10 @@ public class Main {
         if (p.editReview(cid, comment, rating)) System.out.println("Updated.");
         else System.out.println("Review not found.");
     }
-
-    /** [PHASE 2] Requirement: Display Customers Who Reviewed a Product */
-   /**
-     * Requirement: "Given a Product ID, Display All Customers Who Reviewed It"
-     * IMPROVED: Now fetches and displays Customer NAME instead of just ID.
+    
+    /**
+     * [PHASE 2] Requirement: "Given a Product ID, Display All Customers Who Reviewed It (sorted by rating)"
+      Sorts reviews by rating (highest first) before displaying.
      */
     private static void handleListProductReviews() {
         System.out.println("--- List Customers Who Reviewed a Product ---");
@@ -545,24 +583,39 @@ public class Main {
             System.out.println("Product '" + p.getName() + "' has no reviews yet.");
             return;
         }
+
+        // --- SORTING LOGIC (Bubble Sort by Rating Descending) ---
+        int n = reviews.size();
+        // Create an array just for sorting purposes
+        Review[] arr = new Review[n];
+        for(int i=0; i<n; i++) arr[i] = reviews.get(i);
+
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = 0; j < n - i - 1; j++) {
+                if (arr[j].getRatingScore() < arr[j+1].getRatingScore()) { // Descending
+                    // Swap
+                    Review temp = arr[j];
+                    arr[j] = arr[j+1];
+                    arr[j+1] = temp;
+                }
+            }
+        }
+        // --- END SORTING ---
         
-        System.out.println("Customers who reviewed '" + p.getName() + "':");
+        System.out.println("Customers who reviewed '" + p.getName() + "' (Sorted by Rating):");
         
-        // 3. Loop and Fetch Customer Details
-        for(int i=0; i<reviews.size(); i++) {
-            Review r = reviews.get(i);
+        // 3. Display (Now Sorted)
+        for(int i=0; i<n; i++) {
+            Review r = arr[i];
             String custId = r.getCustomerId();
             
-            // --- THIS IS THE NEW PART ---
-            // We use the ID to find the Customer object from the tree
+            // Fetch Customer Name to be professional
             Customer c = system.findCustomerById(custId);
-            
-            String custName = (c != null) ? c.getName() : "Unknown Customer";
-            // ----------------------------
+            String custName = (c != null) ? c.getName() : "Unknown";
 
-            System.out.println("- Name: " + custName + " (ID: " + custId + ") | Rating: " + r.getRatingScore() + " | " + r.getTextComment());
+            System.out.println("- Rating: " + r.getRatingScore() + " | Name: " + custName + " (ID: " + custId + ") | " + r.getTextComment());
         }
-        System.out.println("Total Reviews: " + reviews.size());
+        System.out.println("Total Reviews: " + n);
     }
 
     /** [PHASE 1] Requirement: Find Reviews by Customer */

@@ -1,9 +1,6 @@
 
 
-/**
- *
- * @author mraah
- */
+
 /**
  * This helper class represents a single "node" in the linked list.
  * @param <T> The type of data this node will hold (e.g., Product, Review).

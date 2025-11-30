@@ -3,8 +3,6 @@
  * Class: Binary Search Tree (BST)
  * * Represents a Logarithmic-Time Data Structure.
  * Used to store Products and Customers efficiently (O(log n)).
- * * Implementation Style: 
- * Matches "Lectures 25-27" logic (Iterative Search & Insert, Delete by Merging).
  * * @param <T> The type of data (must be Comparable).
  */
 public class BST<T extends Comparable<T>> {

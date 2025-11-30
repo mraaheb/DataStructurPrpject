@@ -1,8 +1,5 @@
 
-/**
- *
- * @author mraah
- */
+
 /**
  * Our custom implementation of a Linked List data structure.
  * @param <T> The type of data this list will store.

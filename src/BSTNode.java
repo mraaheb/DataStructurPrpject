@@ -2,9 +2,6 @@
  * CSC 212 Project - Phase 2
  * Class: BSTNode
  * * Represents a single node in the Binary Search Tree (BST).
- * * IMPLEMENTATION STYLE:
- * Variable names (el, left, right) are chosen to match the course slides/textbook
- * for consistency with the curriculum.
  * * @param <T> The type of data stored (must be Comparable to allow sorting).
  */
 public class BSTNode<T extends Comparable<T>> {
